@@ -1,0 +1,94 @@
+[
+  {
+    "orderId": "GX-20261122-3IOIOO",
+    "orderDate": "2026-11-22T17:11:54.847Z",
+    "customer": {
+      "name": "yguyfu",
+      "phone": "9123456789",
+      "address": "KCH (Kalpana Chawla Hostel), 466, BML Munjal University"
+    },
+    "items": [
+      {
+        "name": "High Protein Chicken Bowl",
+        "price": 129,
+        "quantity": 1,
+        "subtotal": 129
+      },
+      {
+        "name": "Whey Protein Shake",
+        "price": 149,
+        "quantity": 1,
+        "subtotal": 149
+      },
+      {
+        "name": "Mix Berry Shake",
+        "price": 129,
+        "quantity": 1,
+        "subtotal": 129
+      }
+    ],
+    "subtotal": 407,
+    "taxes": 20.35,
+    "total": 427.35,
+    "paymentMethod": "UPI",
+    "notes": "",
+    "status": "Order Placed",
+    "createdAt": "2026-11-22T17:11:54.879Z"
+  },
+  {
+    "orderId": "GX-20261120-J101",
+    "orderDate": "2026-11-20T12:30:00.000Z",
+    "customer": {
+      "name": "Aarav Sharma",
+      "phone": "9876543210",
+      "address": "BSH (Bhagat Singh Hostel), Room 204, BML Munjal University"
+    },
+    "items": [
+      {
+        "name": "High Protein Chicken Bowl",
+        "price": 129,
+        "quantity": 1
+      },
+      {
+        "name": "Whey Protein Shake",
+        "price": 149,
+        "quantity": 1
+      }
+    ],
+    "subtotal": 278,
+    "taxes": 13.9,
+    "total": 291.9,
+    "paymentMethod": "UPI",
+    "notes": "Less spicy, call on arrival outside BSH gate",
+    "status": "Delivered",
+    "createdAt": "2026-11-20T12:30:00.000Z"
+  },
+  {
+    "orderId": "GX-20261121-J202",
+    "orderDate": "2026-11-21T14:15:00.000Z",
+    "customer": {
+      "name": "Kavya Patel",
+      "phone": "9834567890",
+      "address": "KCH (Kalpana Chawla Hostel), Room 411, BML Munjal University"
+    },
+    "items": [
+      {
+        "name": "Avocado Veg Burrito Bowl",
+        "price": 199,
+        "quantity": 1
+      },
+      {
+        "name": "Watermelon Mint Mojito",
+        "price": 79,
+        "quantity": 1
+      }
+    ],
+    "subtotal": 278,
+    "taxes": 13.9,
+    "total": 291.9,
+    "paymentMethod": "UPI",
+    "notes": "Extra napkins",
+    "status": "In Kitchen",
+    "createdAt": "2026-11-21T14:15:00.000Z"
+  }
+]

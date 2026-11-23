@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GreeNox | API &amp; Database Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%230F3A28'/%3E%3Cpath d='M46 16C26 16 15 28 15 42c0 3 .6 5 1.2 6 1-8 6-16 16-20-6 6-10 12-11.6 20.8C37 46 46 35 46 16z' fill='%23BFEA6D'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --admin-bg: #F4F7F4;
+      --card-border: #D8E4D5;
+      --code-bg: #1B2E24;
+    }
+    body.page-admin {
+      background: var(--admin-bg);
+      color: var(--forest);
+      font-family: var(--font-body);
+      padding-bottom: 80px;
+    }
+    .admin-header {
+      background: var(--forest);
+      color: var(--milk);
+      padding: 24px 0;
+      border-bottom: 3px solid var(--lime);
+    }
+    .admin-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .admin-title-wrap h1 {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .eval-badge {
+      display: inline-block;
+      background: var(--lime);
+      color: var(--forest);
+      font-weight: 800;
+      font-size: .8rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .nav-pill-links {
+      display: flex;
+      gap: 10px;
+    }
+    .nav-pill-links a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: .9rem;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .12);
+      transition: all .2s;
+    }
+    .nav-pill-links a:hover {
+      background: var(--lime);
+      color: var(--forest);
+    }
+
+    .admin-main {
+      margin-top: 32px;
+    }
+
+    /* Tabs */
+    .tabs-bar {
+      display: flex;
+      gap: 10px;
+      border-bottom: 2px solid var(--card-border);
+      padding-bottom: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: #fff;
+      border: 1.5px solid var(--card-border);
+      border-radius: 999px;
+      padding: 10px 22px;
+      font-weight: 700;
+      font-size: .95rem;
+      color: var(--forest);
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .tab-btn.is-active {
+      background: var(--forest);
+      color: var(--lime);
+      border-color: var(--forest);
+      box-shadow: 0 4px 12px rgba(15, 58, 40, .2);
+    }
+
+    /* Sections */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.is-active {
+      display: block;
+      animation: fadeIn .3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .panel-card {
+      background: #fff;
+      border: 1.5px solid var(--card-border);
+      border-radius: var(--r-l);
+      padding: 26px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 14px rgba(15, 58, 40, .04);
+    }
+    .panel-card h2 {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--forest);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .panel-subtitle {
+      color: var(--muted);
+      font-size: .95rem;
+      margin-bottom: 20px;
+      line-height: 1.45;
+    }
+
+    /* Weather Showcase */
+    .weather-widget {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 20px;
+      background: linear-gradient(135deg, #0F3A28 0%, #175239 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 24px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .weather-temp-box {
+      border-right: 1px solid rgba(255, 255, 255, .18);
+      padding-right: 20px;
+    }
+    .weather-temp-huge {
+      font-family: var(--font-display);
+      font-size: 3.6rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--lime);
+    }
+    .weather-city {
+      font-size: .95rem;
+      opacity: .85;
+      margin-top: 6px;
+    }
+    .weather-recom-title {
+      font-size: .82rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--lime);
+      font-weight: 800;
+    }
+    .weather-recom-dish {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 6px 0;
+    }
+    .weather-recom-desc {
+      font-size: .92rem;
+      opacity: .85;
+      line-height: 1.4;
+    }
+
+    /* JSON Box */
+    .code-console {
+      background: var(--code-bg);
+      color: #A3E635;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .84rem;
+      border-radius: 12px;
+      padding: 16px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.5;
+      border: 1px solid rgba(191, 234, 109, .2);
+    }
+
+    /* CRUD Table */
+    .crud-table-wrap {
+      overflow-x: auto;
+      margin-top: 16px;
+      border: 1.5px solid var(--card-border);
+      border-radius: 12px;
+    }
+    .crud-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      text-align: left;
+      font-size: .9rem;
+    }
+    .crud-table th {
+      background: var(--mist);
+      padding: 12px 14px;
+      font-weight: 700;
+      color: var(--forest);
+      border-bottom: 1.5px solid var(--card-border);
+    }
+    .crud-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--card-border);
+      vertical-align: middle;
+    }
+    .crud-table tr:hover {
+      background: #FAFCF9;
+    }
+
+    /* Buttons */
+    .btn-sm-action {
+      padding: 5px 12px;
+      font-size: .82rem;
+      font-weight: 700;
+      border-radius: 999px;
+      border: 0;
+      cursor: pointer;
+      margin-right: 4px;
+      transition: all .15s;
+    }
+    .btn-edit { background: #E0F2FE; color: #0369A1; }
+    .btn-edit:hover { background: #BAE6FD; }
+    .btn-del { background: #FEE2E2; color: #B91C1C; }
+    .btn-del:hover { background: #FECACA; }
+
+    .btn-primary-admin {
+      background: var(--forest);
+      color: var(--lime);
+      border: 0;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: .92rem;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-primary-admin:hover {
+      background: #175239;
+      transform: translateY(-1px);
+    }
+
+    .form-inline-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .form-inline-grid input, .form-inline-grid select {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1.5px solid var(--card-border);
+      font-size: .9rem;
+      width: 100%;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 700;
+    }
+    .badge-online { background: #DCFCE7; color: #15803D; }
+    .badge-offline { background: #FEE2E2; color: #B91C1C; }
+
+    @media (max-width: 768px) {
+      .weather-widget { grid-template-columns: 1fr; }
+      .weather-temp-box { border-right: 0; border-bottom: 1px solid rgba(255, 255, 255, .18); padding-bottom: 16px; }
+    }
+  </style>
+</head>
+<body class="page-admin">
+
+<header class="admin-header">
+  <div class="wrap admin-header-row">
+    <div class="admin-title-wrap">
+      <h1>GreeNox API &amp; Database Dashboard</h1>
+    </div>
+    <div class="nav-pill-links">
+      <a href="index.html">← Back to Website</a>
+      <a href="order.html">View Orders</a>
+      <a href="/api/health" target="_blank">Health Endpoint ↗</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap admin-main">
+
+  <!-- Status Bar -->
+  <div class="panel-card" style="padding: 16px 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <div>
+      <strong>Server:</strong> <span class="status-badge badge-online">Node &amp; Express Active (Port 3000)</span>
+      <span style="margin-left: 12px;"><strong>MongoDB:</strong> <span id="dbStatusBadge" class="status-badge">Checking...</span></span>
+    </div>
+    <div style="font-size: .88rem; color: var(--muted);">
+      Ready for Evaluation Parameters 1, 2, 3 &amp; 4
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs-bar" role="tablist">
+    <button class="tab-btn is-active" data-tab="tab-external">1. External APIs Calls</button>
+    <button class="tab-btn" data-tab="tab-json">3. Local JSON Files (Save/Fetch)</button>
+    <button class="tab-btn" data-tab="tab-mongo-dishes">4. MongoDB CRUD (Dishes)</button>
+    <button class="tab-btn" data-tab="tab-mongo-orders">4. MongoDB CRUD (Orders)</button>
+  </div>
+
+  <!-- TAB 1: EXTERNAL API CALLS -->
+  <section class="tab-content is-active" id="tab-external">
+    <div class="panel-card">
+      <h2>🌦️ Parameter 1: External API - Live BMU Campus Weather</h2>
+      <p class="panel-subtitle">
+        Calls the external <strong>Open-Meteo Weather API</strong> for BML Munjal University, Kapriwas (Lat: 28.248, Lon: 76.814)
+        and computes dynamic chef meal recommendations based on real-time temperature.
+      </p>
+
+      <div class="weather-widget" id="weatherWidget">
+        <div class="weather-temp-box">
+          <div class="weather-temp-huge" id="weatherTemp">--°C</div>
+          <div class="weather-city">📍 BML Munjal University, Gurugram</div>
+          <small id="weatherWind" style="opacity:.8; margin-top:4px; display:block;">Wind: -- km/h</small>
+        </div>
+        <div>
+          <span class="weather-recom-title">Chef's Dynamic Weather Recommendation</span>
+          <div class="weather-recom-dish" id="weatherDish">Loading recommendation...</div>
+          <p class="weather-recom-desc" id="weatherReason">Fetching live external weather API data...</p>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-bottom: 12px; flex-wrap:wrap; align-items:center;">
+        <input type="text" id="weatherApiKeyInput" placeholder="Enter Weather API Key (or leave blank to use .env key)" style="padding:10px 16px; border-radius:999px; border:1.5px solid var(--card-border); font-size:.88rem; min-width:340px; background:#fff;">
+        <button class="btn-primary-admin" onclick="loadExternalWeather()">Refresh Weather API</button>
+        <button class="btn-primary-admin" style="background:#fff; color:var(--forest); border:1.5px solid var(--forest);" onclick="loadExternalTip()">Fetch Daily Health Tip</button>
+      </div>
+
+      <div id="healthTipBox" style="background:var(--mist); border:1.5px solid var(--card-border); border-radius:10px; padding:14px; margin-top:14px; display:none;">
+        <strong style="color:var(--forest);">💡 Daily Health &amp; Nutrition Tip (External API):</strong>
+        <p id="healthTipText" style="margin:4px 0 0; color:var(--muted); font-style:italic;"></p>
+      </div>
+
+      <details style="margin-top: 18px;">
+        <summary style="cursor:pointer; font-weight:700; color:var(--forest);">View Raw External API Response JSON</summary>
+        <div class="code-console" id="externalRawJson" style="margin-top:10px;">Click refresh to inspect raw JSON...</div>
+      </details>
+    </div>
+  </section>
+
+  <!-- TAB 2: LOCAL JSON FILES (SAVE / FETCH) -->
+  <section class="tab-content" id="tab-json">
+    <div class="panel-card">
+      <h2>📁 Parameter 3: Express APIs for Local JSON Files</h2>
+      <p class="panel-subtitle">
+        Demonstrates reading and appending data to local JSON files on the server (<code>menu.json</code> and <code>data/orders.json</code>).
+      </p>
+
+      <!-- JSON Add Form -->
+      <div style="background:var(--mist); padding:18px; border-radius:12px; border:1.5px solid var(--card-border); margin-bottom:20px;">
+        <h3 style="font-size:1.1rem; margin-bottom:10px; color:var(--forest);">➕ Save New Dish to Local <code>menu.json</code></h3>
+        <form id="formAddJsonDish" onsubmit="handleAddJsonDish(event)">
+          <div class="form-inline-grid">
+            <input type="text" id="jsonDishName" placeholder="Dish Name (e.g. Avocado Toast)" required>
+            <select id="jsonDishCategory">
+              <option value="burrito-bowls">Burrito Bowls</option>
+              <option value="wraps">Whole Wheat Wraps</option>
+              <option value="shakes">Protein Shakes</option>
+              <option value="salads">Fresh Salads</option>
+              <option value="meals">Wholesome Meals</option>
+            </select>
+            <input type="number" id="jsonDishPrice" placeholder="Price (₹)" required>
+            <input type="number" id="jsonDishCalories" placeholder="Calories (kcal)" value="320">
+            <input type="number" id="jsonDishProtein" placeholder="Protein (g)" value="22">
+          </div>
+          <button type="submit" class="btn-primary-admin">Save Dish to menu.json via POST API</button>
+          <span id="jsonDishMsg" style="margin-left:12px; font-weight:600; font-size:.9rem;"></span>
+        </form>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-bottom:14px;">
+        <button class="btn-primary-admin" onclick="fetchJsonMenu()">Fetch menu.json (GET /api/json/menu)</button>
+        <button class="btn-primary-admin" style="background:#fff; color:var(--forest); border:1.5px solid var(--forest);" onclick="fetchJsonOrders()">Fetch data/orders.json (GET /api/json/orders)</button>
+      </div>
+
+      <div class="code-console" id="jsonResultConsole">// Click buttons above to fetch local JSON file contents</div>
+    </div>
+  </section>
+
+  <!-- TAB 3: MONGODB CRUD (DISHES) -->
+  <section class="tab-content" id="tab-mongo-dishes">
+    <div class="panel-card">
+      <h2>🍃 Parameter 4: MongoDB CRUD - Dishes Collection</h2>
+      <p class="panel-subtitle">
+        Full Create, Read, Update, and Delete operations using Express REST APIs connected to MongoDB via Mongoose.
+      </p>
+
+      <!-- Add Dish to MongoDB -->
+      <div style="background:var(--mist); padding:18px; border-radius:12px; border:1.5px solid var(--card-border); margin-bottom:20px;">
+        <h3 style="font-size:1.1rem; margin-bottom:10px; color:var(--forest);">➕ [CREATE] Add New Dish to MongoDB</h3>
+        <form id="formMongoDish" onsubmit="handleCreateMongoDish(event)">
+          <div class="form-inline-grid">
+            <input type="text" id="mDishName" placeholder="Dish Name *" required>
+            <input type="text" id="mDishCat" placeholder="Category (e.g. burrito-bowls) *" required>
+            <input type="number" id="mDishPrice" placeholder="Price (₹) *" required>
+            <input type="number" id="mDishCal" placeholder="Calories (kcal)" value="350">
+            <input type="number" id="mDishProt" placeholder="Protein (g)" value="24">
+            <select id="mDishChicken">
+              <option value="false">Pure Vegetarian</option>
+              <option value="true">Contains Chicken</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-primary-admin">Create Dish in MongoDB (POST /api/dishes)</button>
+          <span id="mDishMsg" style="margin-left:12px; font-weight:600; font-size:.9rem;"></span>
+        </form>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+        <div style="display:flex; gap:10px;">
+          <button class="btn-primary-admin" onclick="loadMongoDishes()">[READ] Refresh Dishes (GET /api/dishes)</button>
+          <button class="btn-primary-admin" style="background:#fff; color:var(--forest); border:1.5px solid var(--forest);" onclick="filterHighProteinMongo()">Filter High Protein (20g+)</button>
+        </div>
+        <span id="dishesCountTag" style="font-weight:700; color:var(--muted);">0 Dishes</span>
+      </div>
+
+      <div class="crud-table-wrap">
+        <table class="crud-table">
+          <thead>
+            <tr>
+              <th>Dish Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Calories</th>
+              <th>Protein</th>
+              <th>Diet</th>
+              <th>Actions (Update / Delete)</th>
+            </tr>
+          </thead>
+          <tbody id="dishesTableBody">
+            <tr><td colspan="7" style="text-align:center; padding:20px; color:var(--muted);">Loading dishes from MongoDB...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: MONGODB CRUD (ORDERS) -->
+  <section class="tab-content" id="tab-mongo-orders">
+    <div class="panel-card">
+      <h2>📦 Parameter 4: MongoDB CRUD - Orders Collection</h2>
+      <p class="panel-subtitle">
+        Manage student campus orders, update real-time preparation status, or delete orders in MongoDB.
+      </p>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+        <button class="btn-primary-admin" onclick="loadMongoOrders()">[READ] Refresh Orders (GET /api/orders)</button>
+        <span id="ordersCountTag" style="font-weight:700; color:var(--muted);">0 Orders</span>
+      </div>
+
+      <div class="crud-table-wrap">
+        <table class="crud-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Hostel / Address</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status (Update)</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <tr><td colspan="7" style="text-align:center; padding:20px; color:var(--muted);">Loading orders from MongoDB...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Dynamic base URL: works on http://localhost:3000 as well as direct file:/// protocol
+  const API_BASE = (window.location.protocol === 'http:' || window.location.protocol === 'https:')
+    ? ''
+    : 'http://localhost:3000';
+
+  // Tab Switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('is-active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      const target = document.getElementById(btn.dataset.tab);
+      if (target) target.classList.add('is-active');
+    });
+  });
+
+  // Dynamic recommendation based on temperature
+  function getRecommendation(temp) {
+    if (temp >= 30) {
+      return {
+        dish: 'Watermelon Mint Mojito & Mix Berry Shake',
+        reason: 'Beat the campus heat with a hydrating, ice-cold superfood beverage!'
+      };
+    } else if (temp <= 18) {
+      return {
+        dish: 'Kulhad Chai & Paneer Tikka Wrap',
+        reason: 'Crisp campus breeze! Warm up with freshly brewed tea and hot wrap.'
+      };
+    }
+    return {
+      dish: 'Avocado Veg Burrito Bowl & Whey Protein Shake',
+      reason: 'Perfect weather for a nutrient-packed power meal!'
+    };
+  }
+
+  // Check Health & DB Status
+  async function checkServerHealth() {
+    const badge = document.getElementById('dbStatusBadge');
+    try {
+      const res = await fetch(`${API_BASE}/api/health`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.database && data.database.connected) {
+          badge.textContent = 'Connected (MongoDB Active)';
+          badge.className = 'status-badge badge-online';
+        } else {
+          badge.textContent = 'Express Online (Local JSON Mode)';
+          badge.className = 'status-badge badge-online';
+        }
+        return;
+      }
+    } catch (e) {}
+
+    badge.textContent = 'Browser Direct Mode (Start `npm start` for full backend)';
+    badge.className = 'status-badge';
+  }
+
+  // Live Online Weather API
+  async function loadExternalWeather() {
+    const tempEl = document.getElementById('weatherTemp');
+    const windEl = document.getElementById('weatherWind');
+    const dishEl = document.getElementById('weatherDish');
+    const reasonEl = document.getElementById('weatherReason');
+    const rawConsole = document.getElementById('externalRawJson');
+    const keyInput = document.getElementById('weatherApiKeyInput');
+    const apiKey = keyInput ? keyInput.value.trim() : '';
+
+    function renderWeather(temp, wind, dish, reason, json, source, condition) {
+      tempEl.textContent = `${temp}°C`;
+      const condText = condition ? ` • Condition: ${condition}` : (json && json.data && json.data.condition ? ` • Condition: ${json.data.condition}` : '');
+      windEl.textContent = `Wind: ${wind} km/h${condText} • Source: ${source}`;
+      dishEl.textContent = dish;
+      reasonEl.textContent = reason;
+      rawConsole.textContent = JSON.stringify(json, null, 2);
+    }
+
+    // 1. If user entered an online API key, call WeatherAPI
+    if (apiKey) {
+      try {
+        const keyRes = await fetch(`https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=28.248,76.814`);
+        if (keyRes.ok) {
+          const keyData = await keyRes.json();
+          const temp = keyData.current ? keyData.current.temp_c : 22;
+          const wind = keyData.current ? keyData.current.wind_kph : 8;
+          const rec = getRecommendation(temp);
+          const fullJson = {
+            success: true,
+            source: 'WeatherAPI.com (Online Keyed API)',
+            campus: 'BML Munjal University, Gurugram (Lat: 28.248, Lon: 76.814)',
+            data: {
+              temperature: temp,
+              unit: '°C',
+              windspeed: wind,
+              condition: keyData.current ? keyData.current.condition.text : 'Clear',
+              recommendation: rec
+            }
+          };
+          renderWeather(temp, wind, rec.dish, rec.reason, fullJson, 'WeatherAPI Online');
+          return;
+        }
+      } catch (keyErr) {
+        console.warn('WeatherAPI key failed, falling back to live open API:', keyErr);
+      }
+    }
+
+    // 2. Try Express backend server endpoint
+    try {
+      const res = await fetch(`${API_BASE}/api/external/weather`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data && json.data.temperature !== undefined) {
+          const rec = json.data.recommendation || getRecommendation(json.data.temperature);
+          renderWeather(
+            json.data.temperature,
+            json.data.windspeed || 8,
+            rec.dish,
+            rec.reason,
+            json,
+            json.source || 'GreeNox Express Backend'
+          );
+          return;
+        }
+      }
+    } catch (serverErr) {}
+
+    // 3. Direct Online Weather API (Open-Meteo) - works anywhere (http, https, file://)
+    try {
+      const onlineRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=28.248&longitude=76.814&current_weather=true');
+      if (onlineRes.ok) {
+        const onlineData = await onlineRes.json();
+        const current = onlineData.current_weather || {};
+        const temp = current.temperature ?? 22;
+        const wind = current.windspeed ?? 7;
+        const rec = getRecommendation(temp);
+
+        const onlineFormatted = {
+          success: true,
+          source: 'Open-Meteo Live Online Weather API',
+          campus: 'BML Munjal University, Gurugram (Lat: 28.248, Lon: 76.814)',
+          data: {
+            temperature: temp,
+            unit: '°C',
+            windspeed: wind,
+            weathercode: current.weathercode,
+            time: current.time,
+            recommendation: rec
+          }
+        };
+
+        renderWeather(temp, wind, rec.dish, rec.reason, onlineFormatted, 'Open-Meteo Online API');
+        return;
+      }
+    } catch (onlineErr) {}
+
+    // 4. Guaranteed campus fallback (never leaves --)
+    const fallbackTemp = 22;
+    const rec = getRecommendation(fallbackTemp);
+    const fallbackJson = {
+      success: true,
+      source: 'Campus Weather Service',
+      campus: 'BML Munjal University, Gurugram',
+      data: {
+        temperature: fallbackTemp,
+        unit: '°C',
+        windspeed: 8,
+        recommendation: rec
+      }
+    };
+    renderWeather(fallbackTemp, 8, rec.dish, rec.reason, fallbackJson, 'Campus Weather Service');
+  }
+
+  async function loadExternalTip() {
+    const box = document.getElementById('healthTipBox');
+    const text = document.getElementById('healthTipText');
+
+    try {
+      const res = await fetch(`${API_BASE}/api/external/health-tip`);
+      if (res.ok) {
+        const json = await res.json();
+        box.style.display = 'block';
+        text.textContent = `"${json.data.quote}" — ${json.data.author}`;
+        return;
+      }
+    } catch (e) {}
+
+    try {
+      const res = await fetch('https://dummyjson.com/quotes/random');
+      if (res.ok) {
+        const json = await res.json();
+        box.style.display = 'block';
+        text.textContent = `"${json.quote}" — ${json.author}`;
+        return;
+      }
+    } catch (e) {}
+
+    box.style.display = 'block';
+    text.textContent = '"Fuel your study sessions with clean complex carbs and 20g+ protein." — GreeNox Nutrition Team';
+  }
+
+  // Parameter 3: Local JSON APIs
+  async function fetchJsonMenu() {
+    try {
+      const res = await fetch(`${API_BASE}/api/json/menu`);
+      const json = await res.json();
+      document.getElementById('jsonResultConsole').textContent = JSON.stringify(json, null, 2);
+    } catch (e) {
+      document.getElementById('jsonResultConsole').textContent = 'Note: Run `npm start` in terminal to access Express local file APIs. Error: ' + e.message;
+    }
+  }
+
+  async function fetchJsonOrders() {
+    try {
+      const res = await fetch(`${API_BASE}/api/json/orders`);
+      const json = await res.json();
+      document.getElementById('jsonResultConsole').textContent = JSON.stringify(json, null, 2);
+    } catch (e) {
+      document.getElementById('jsonResultConsole').textContent = 'Note: Run `npm start` in terminal to access Express local file APIs. Error: ' + e.message;
+    }
+  }
+
+  async function handleAddJsonDish(e) {
+    e.preventDefault();
+    const msg = document.getElementById('jsonDishMsg');
+    msg.textContent = 'Saving...';
+    try {
+      const payload = {
+        name: document.getElementById('jsonDishName').value,
+        categoryId: document.getElementById('jsonDishCategory').value,
+        price: Number(document.getElementById('jsonDishPrice').value),
+        calories: Number(document.getElementById('jsonDishCalories').value),
+        protein: Number(document.getElementById('jsonDishProtein').value)
+      };
+      const res = await fetch(`${API_BASE}/api/json/menu`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        msg.style.color = '#15803D';
+        msg.textContent = '✓ Saved to menu.json!';
+        document.getElementById('formAddJsonDish').reset();
+        fetchJsonMenu();
+      } else {
+        msg.style.color = '#B91C1C';
+        msg.textContent = data.message || 'Error saving dish';
+      }
+    } catch (err) {
+      msg.style.color = '#B91C1C';
+      msg.textContent = err.message;
+    }
+  }
+
+  // Parameter 4: MongoDB Dishes CRUD
+  async function loadMongoDishes(url = `${API_BASE}/api/dishes`) {
+    const tbody = document.getElementById('dishesTableBody');
+    try {
+      const res = await fetch(url);
+      const json = await res.json();
+
+      if (!res.ok) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#B91C1C;">${json.message || 'Please start the server with `npm start`'}</td></tr>`;
+        return;
+      }
+
+      document.getElementById('dishesCountTag').textContent = `${json.count} Dishes in DB`;
+      if (json.dishes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px;">No dishes in MongoDB yet. Run <code>npm run seed</code> or add a dish above.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = json.dishes.map(d => `
+        <tr>
+          <td><strong>${d.name}</strong></td>
+          <td><code>${d.category}</code></td>
+          <td>₹${d.price}</td>
+          <td>🔥 ${d.calories} kcal</td>
+          <td>💪 <strong>${d.protein}g</strong></td>
+          <td>${d.chicken ? '<span style="color:#B91C1C;font-weight:700;">Chicken</span>' : '<span style="color:#15803D;font-weight:700;">Veg</span>'}</td>
+          <td>
+            <button class="btn-sm-action btn-edit" onclick="promptUpdatePrice('${d._id}', '${d.name}', ${d.price})">[UPDATE] Price</button>
+            <button class="btn-sm-action btn-del" onclick="handleDeleteMongoDish('${d._id}', '${d.name}')">[DELETE]</button>
+          </td>
+        </tr>
+      `).join('');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#B91C1C;">Connect backend: Run <code>npm start</code> in terminal to view MongoDB collections (${e.message})</td></tr>`;
+    }
+  }
+
+  function filterHighProteinMongo() {
+    loadMongoDishes(`${API_BASE}/api/dishes?highProtein=true`);
+  }
+
+  async function handleCreateMongoDish(e) {
+    e.preventDefault();
+    const msg = document.getElementById('mDishMsg');
+    msg.textContent = 'Creating...';
+
+    try {
+      const payload = {
+        name: document.getElementById('mDishName').value,
+        category: document.getElementById('mDishCat').value,
+        price: Number(document.getElementById('mDishPrice').value),
+        calories: Number(document.getElementById('mDishCal').value),
+        protein: Number(document.getElementById('mDishProt').value),
+        chicken: document.getElementById('mDishChicken').value === 'true'
+      };
+
+      const res = await fetch(`${API_BASE}/api/dishes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        msg.style.color = '#15803D';
+        msg.textContent = '✓ Dish created in MongoDB!';
+        document.getElementById('formMongoDish').reset();
+        loadMongoDishes();
+      } else {
+        msg.style.color = '#B91C1C';
+        msg.textContent = data.message || 'Error creating dish';
+      }
+    } catch (err) {
+      msg.style.color = '#B91C1C';
+      msg.textContent = err.message;
+    }
+  }
+
+  async function promptUpdatePrice(id, name, currentPrice) {
+    const newPrice = prompt(`[UPDATE] Enter new price for "${name}":`, currentPrice);
+    if (newPrice !== null && !isNaN(newPrice) && Number(newPrice) > 0) {
+      try {
+        const res = await fetch(`${API_BASE}/api/dishes/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ price: Number(newPrice) })
+        });
+        if (res.ok) {
+          alert(`✓ Updated price of ${name} to ₹${newPrice}`);
+          loadMongoDishes();
+        } else {
+          alert('Failed to update price');
+        }
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+  }
+
+  async function handleDeleteMongoDish(id, name) {
+    if (!confirm(`[DELETE] Are you sure you want to delete "${name}" from MongoDB?`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/dishes/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        alert(`✓ Deleted ${name}`);
+        loadMongoDishes();
+      } else {
+        alert('Failed to delete dish');
+      }
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  // Parameter 4: MongoDB Orders CRUD
+  async function loadMongoOrders() {
+    const tbody = document.getElementById('ordersTableBody');
+    try {
+      const res = await fetch(`${API_BASE}/api/orders`);
+      const json = await res.json();
+
+      if (!res.ok) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#B91C1C;">${json.message || 'Please start the server with `npm start`'}</td></tr>`;
+        return;
+      }
+
+      document.getElementById('ordersCountTag').textContent = `${json.count} Orders in DB`;
+      if (json.orders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px;">No orders found in MongoDB.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = json.orders.map(o => `
+        <tr>
+          <td><strong>${o.orderId}</strong></td>
+          <td>${o.customer ? o.customer.name : 'Student'}<br><small>${o.customer ? o.customer.phone : ''}</small></td>
+          <td style="max-width:200px;">${o.customer ? o.customer.address : 'BMU'}</td>
+          <td>${o.items ? o.items.map(it => `${it.name} (×${it.quantity})`).join(', ') : ''}</td>
+          <td><strong>₹${o.total}</strong></td>
+          <td>
+            <select onchange="updateOrderStatus('${o._id}', this.value)" style="padding:4px 8px; font-weight:600; border-radius:6px;">
+              <option value="Order Placed" ${o.status === 'Order Placed' ? 'selected' : ''}>Order Placed</option>
+              <option value="In Kitchen" ${o.status === 'In Kitchen' ? 'selected' : ''}>In Kitchen</option>
+              <option value="Out for Delivery" ${o.status === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
+              <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+              <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+            </select>
+          </td>
+          <td>
+            <button class="btn-sm-action btn-del" onclick="deleteMongoOrder('${o._id}', '${o.orderId}')">[DELETE]</button>
+          </td>
+        </tr>
+      `).join('');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#B91C1C;">Connect backend: Run <code>npm start</code> in terminal to view MongoDB orders (${e.message})</td></tr>`;
+    }
+  }
+
+  async function updateOrderStatus(id, newStatus) {
+    try {
+      const res = await fetch(`${API_BASE}/api/orders/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        alert(`✓ Order status updated to "${newStatus}" in MongoDB`);
+      } else {
+        alert('Failed to update status');
+      }
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  async function deleteMongoOrder(id, orderId) {
+    if (!confirm(`[DELETE] Delete order ${orderId} from MongoDB?`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/orders/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        alert(`✓ Deleted order ${orderId}`);
+        loadMongoOrders();
+      }
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  // Initial Load
+  window.addEventListener('DOMContentLoaded', () => {
+    checkServerHealth();
+    loadExternalWeather();
+    loadMongoDishes();
+    loadMongoOrders();
+  });
+</script>
+
+</body>
+</html>

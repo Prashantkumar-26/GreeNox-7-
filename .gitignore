@@ -1,0 +1,13 @@
+
+# Dependencies
+node_modules/
+
+# Environment secrets
+.env
+.env.*
+
+# Allow example environment file
+!.env.example
+
+# System files
+.DS_Store
